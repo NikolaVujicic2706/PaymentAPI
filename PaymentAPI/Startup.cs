@@ -17,13 +17,15 @@ namespace PaymentAPI
 {
     public class Startup
     {
-        
-        public Startup(IConfiguration configuration)
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
         {
             Configuration = configuration;
+            Enviornment = environment;
         }
 
         public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Enviornment { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -34,9 +36,16 @@ namespace PaymentAPI
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "PaymentAPI", Version = "v1" });
             });
-
-            services.AddDbContext<PaymentDetailContext>(options =>
+            if (Enviornment.IsDevelopment())
+            {
+                services.AddDbContext<PaymentDetailContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DevConnection")));
+            }
+            else
+            {
+                services.AddDbContext<PaymentDetailContext>(options =>
+            options.UseSqlServer(Configuration.GetConnectionString("ProdConnection")));
+            }
 
             services.AddCors();
         }
